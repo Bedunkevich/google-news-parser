@@ -10,10 +10,11 @@ mod messages;
 mod parse;
 mod utils;
 
-const MAX_ITEMS: i32 = 10;
+const MAX_ITEMS: usize = 10;
 
 #[tokio::main]
 async fn main() -> Result<(), ExitFailure> {
+    let mut tasks = vec![];
     let args: Vec<String> = env::args().collect();
     let url: &str;
 
@@ -44,31 +45,46 @@ async fn main() -> Result<(), ExitFailure> {
 
     utils::log("title", &feed.title.unwrap().content);
 
-    let mut i: i32 = 0;
+    let mut i: usize = 0;
 
     for item in entries {
-        let content = &item.content;
-        let id = &item.id;
+        tasks.push(tokio::spawn(async move {
+            let result = parse::get_article_link(&item.id, None).await;
 
-        utils::log("id", id);
-        utils::log("title", &item.title.unwrap().content);
-        // utils::log("summary", &item.summary.unwrap().content);
-        utils::log("published", &item.published.unwrap().to_string());
+            match result {
+                Ok(link) => {
+                    let id = &item.id;
 
-        if content.is_some() {
-            println!("Content: {:?}", content);
-        }
+                    utils::log("id", id);
+                    utils::log("title", &item.title.unwrap().content);
+                    utils::log("published", &item.published.unwrap().to_string());
+                    utils::log("link", &link);
+                    println!("");
+                    return link;
+                }
+                Err(err) => {
+                    println!("Error: {:?}", err);
+                    return "error".to_string();
+                }
+            }
+        }));
 
-        let link: String = parse::get_article_link(id).await.unwrap();
-        utils::log("link", &link);
-
-        println!("");
         i += 1;
 
         if i >= MAX_ITEMS {
             break;
         }
     }
+
+    println!("");
+
+    let mut results = vec![];
+
+    for task in tasks {
+        results.push(task.await.unwrap());
+    }
+
+    // println!("results: {:?}", results);
 
     Ok(())
 }
