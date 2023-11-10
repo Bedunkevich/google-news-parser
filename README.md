@@ -1,4 +1,3 @@
-[![License](https://badgen.net/github/license/Bedunkevich/google-news-parser)](./LICENSE)
 ## Usage
 
 ```sh
