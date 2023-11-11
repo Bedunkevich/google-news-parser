@@ -1,13 +1,14 @@
 use colored::Colorize;
 use exitfailure::ExitFailure;
+use feed_rs;
 use feed_rs::model::Entry;
 use feed_rs::model::Feed;
-use feed_rs::parser;
 use reqwest::Url;
 use std::env;
 
+mod google_news;
 mod messages;
-mod parse;
+mod parser;
 mod utils;
 
 const MAX_ITEMS: usize = 10;
@@ -40,7 +41,7 @@ async fn main() -> Result<(), ExitFailure> {
     let fetch_url: Url = Url::parse(&*url)?;
 
     let text: String = reqwest::get(fetch_url).await?.text().await?;
-    let feed: Feed = parser::parse(text.as_bytes()).unwrap();
+    let feed: Feed = feed_rs::parser::parse(text.as_bytes()).unwrap();
     let entries: Vec<Entry> = feed.entries;
 
     utils::log("title", &feed.title.unwrap().content);
@@ -49,7 +50,7 @@ async fn main() -> Result<(), ExitFailure> {
 
     for item in entries {
         tasks.push(tokio::spawn(async move {
-            let result = parse::get_article_link(&item.id, None).await;
+            let result = google_news::get_article_link(&item.id, None).await;
 
             match result {
                 Ok(link) => {
@@ -58,13 +59,14 @@ async fn main() -> Result<(), ExitFailure> {
                     utils::log("id", id);
                     utils::log("title", &item.title.unwrap().content);
                     utils::log("published", &item.published.unwrap().to_string());
-                    utils::log("link", &link);
+                    utils::log("link", &link.original_link);
+                    utils::log("host", &link.host);
                     println!("");
                     return link;
                 }
                 Err(err) => {
                     println!("Error: {:?}", err);
-                    return "error".to_string();
+                    panic!()
                 }
             }
         }));
@@ -78,10 +80,34 @@ async fn main() -> Result<(), ExitFailure> {
 
     println!("");
 
-    let mut results = vec![];
+    let mut articles = vec![];
 
     for task in tasks {
-        results.push(task.await.unwrap());
+        articles.push(task.await.unwrap());
+    }
+
+    utils::system_log(">", "Parsing sources....");
+
+    let mut sites = vec![];
+
+    for article in articles {
+        sites.push(tokio::spawn(async move {
+            let result = parser::parse_article(article).await;
+
+            match result {
+                Ok(()) => {
+                    // ToDo
+                }
+                Err(err) => {
+                    println!("Error: {:?}", err);
+                    panic!()
+                }
+            }
+        }));
+    }
+
+    for site in sites {
+        site.await.unwrap();
     }
 
     // println!("results: {:?}", results);
