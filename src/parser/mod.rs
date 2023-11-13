@@ -17,11 +17,7 @@ pub async fn parse_article(article: Article) -> Result<(), ExitFailure> {
             variants::curbed::parse(host, original_link).await?;
         }
         "nypost.com" => {
-            variants::curbed::parse(
-                host,
-                "https://www.curbed.com/article/best-legal-weed-shops-nyc.html",
-            )
-            .await?;
+            variants::nypost::parse(host, original_link).await?;
         }
         _ => {
             utils::black_log(">", original_link);

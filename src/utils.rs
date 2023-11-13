@@ -18,7 +18,7 @@ pub fn blue_log(action: &str, value: &str) {
     println!(
         "{0:>LOG_MARGIN$} {1}",
         action.cyan().bold(),
-        value.bright_cyan()
+        value.bright_green()
     );
 }
 
