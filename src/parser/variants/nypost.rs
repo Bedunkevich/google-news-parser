@@ -1,6 +1,6 @@
 use headless_chrome::{Browser, Element};
 
-use crate::utils;
+use crate::{parser, utils};
 
 pub async fn parse(host: &str, url_str: &str) -> Result<(), failure::Error> {
     let browser = Browser::default().unwrap();
@@ -23,6 +23,12 @@ pub async fn parse(host: &str, url_str: &str) -> Result<(), failure::Error> {
     utils::blue_log("", url_str);
     utils::black_log("H >", &header_text);
     utils::black_log("T >", &article_text);
+
+    if false {
+        parser::post(&header_text, &article_text, None)
+            .await
+            .unwrap();
+    }
 
     println!();
 

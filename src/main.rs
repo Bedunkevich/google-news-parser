@@ -1,4 +1,5 @@
 use colored::Colorize;
+use dotenv::dotenv;
 use exitfailure::ExitFailure;
 use feed_rs;
 use feed_rs::model::Entry;
@@ -30,11 +31,13 @@ async fn main() -> Result<(), ExitFailure> {
     }
 
     if !args.get(2).is_some() {
-        println!("{}", "url params not found".yellow());
+        println!("{} - {:?}", "url params not found".yellow(), args);
         return Ok(());
     }
 
     url = &args[2];
+
+    dotenv().ok();
 
     utils::system_log("Fetching", url);
 

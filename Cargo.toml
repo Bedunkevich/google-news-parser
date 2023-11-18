@@ -7,12 +7,14 @@ edition = "2021"
 
 [dependencies]
 colored = "2.0.4"
+dotenv = "0.15.0"
 exitfailure = "0.5.1"
 failure = "0.1.8"
 feed-rs = "1.3.0"
 headless_chrome = "1.0.8"
 log = "0.4.20"
 reqwest = { version = "0.11.22", features = ["json"] }
+sanitize_html = "0.8.0"
 scraper = "0.18.1"
 serde = "1.0.192"
 serde-xml-rs = "0.6.0"
