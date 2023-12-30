@@ -13,8 +13,8 @@ pub struct Article {
 /// `id` - Google news articles ID.
 ///
 /// `delay` – optional delay in milliseconds.
-pub async fn get_article_link(id: &str, delay: Option<u64>) -> Result<Article, ExitFailure> {
-    let url: String = format!("https://news.google.com/rss/articles/{id}?oc=1");
+pub async fn get_article_link(url: &str, delay: Option<u64>) -> Result<Article, ExitFailure> {
+    // let url: String = format!("https://news.google.com/rss/articles/{id}?oc=1");
 
     let fetch_url: Url = Url::parse(&*url)?;
 

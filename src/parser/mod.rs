@@ -7,36 +7,91 @@ use std::collections::HashMap;
 
 use crate::{google_news::Article, utils};
 
+use self::models::Post;
+
 mod models;
 mod variants;
 
+const USE_POST: bool = false;
+
 pub async fn parse_article(article: Article) -> Result<(), ExitFailure> {
-    let host = article.host.as_str();
+    let host_string = get_host(article.host).unwrap();
+    let host = host_string.as_str();
     let original_link = article.original_link.as_str();
 
     match host {
-        "www.foxnews.com" => {
+        "foxnews.com" => {
             println!();
             variants::fox_news::parse(host, original_link).await?;
         }
-        "www.curbed.com" => {
+        "curbed.com" => {
             variants::curbed::parse(host, original_link).await?;
         }
         "nypost.com" => {
             variants::nypost::parse(host, original_link).await?;
         }
-        "www.axios.com" => {
+        "axios.com" => {
             variants::axios::parse(host, original_link).await?;
         }
+        "sfchronicle.com" => {
+            let is_article_link = original_link.contains("article");
+
+            if is_article_link {
+                match variants::sfchronicle::parse(host, original_link).await {
+                    Ok(optional_post) => {
+                        if USE_POST {
+                            match optional_post {
+                                Some(post) => {
+                                    commit_post(&post).await?;
+                                }
+                                None => {}
+                            }
+                        }
+                    }
+                    Err(e) => println!("Error: {:?}", e),
+                }
+            } else {
+                utils::black_log("Non article", original_link);
+            }
+        }
+        "sfstandard.com" => match variants::sfstandard::parse(host, original_link).await {
+            Ok(post) => {
+                if USE_POST {
+                    commit_post(&post).await?;
+                }
+            }
+            Err(e) => println!("Error: {:?}", e),
+        },
+        "sfexaminer.com" => {
+            let not_article_link = original_link.contains("local-events");
+
+            if not_article_link {
+                utils::black_log("Non article", original_link);
+            } else {
+                match variants::sfexaminer::parse(host, original_link).await {
+                    Ok(post) => {
+                        if USE_POST {
+                            commit_post(&post).await?;
+                        }
+                    }
+                    Err(e) => println!("Error: {:?}", e),
+                }
+            }
+        }
         _ => {
-            utils::black_log(">", original_link);
+            utils::black_log("?", host);
         }
     }
 
     return Ok(());
 }
 
-pub async fn post(
+pub async fn commit_post(post: &Post) -> Result<(), failure::Error> {
+    post_to_blockchain(&post.title, &post.description, post.hero_image.as_deref()).await?;
+    Ok(())
+}
+
+pub async fn post_to_blockchain(
     title: &str,
     description: &str,
     enclosure: Option<&str>,
@@ -77,9 +132,21 @@ pub async fn post(
     return Ok(());
 }
 
-#[tokio::test]
-async fn post_test() {
-    // post("A", "B").await.unwrap();
+pub fn get_host(origin: String) -> Result<String, failure::Error> {
+    // let origin = String::from("www_foxnews_com");
+    let parts = origin.split(".");
+    let collection: Vec<&str> = parts.collect();
+    let len = collection.len();
 
-    assert_eq!(2 + 2, 4);
+    let last = &collection[len - 2..len];
+    let host: String = last.join(".");
+
+    return Ok(host);
+}
+
+#[tokio::test]
+async fn get_host_test() {
+    let host = get_host("www.foxnews.com".to_string()).unwrap();
+
+    assert_eq!(host, "foxnews.com");
 }

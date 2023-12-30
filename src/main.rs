@@ -53,7 +53,8 @@ async fn main() -> Result<(), ExitFailure> {
 
     for item in entries {
         tasks.push(tokio::spawn(async move {
-            let result = google_news::get_article_link(&item.id, None).await;
+            let link = String::from(&item.links[0].href);
+            let result = google_news::get_article_link(&link, None).await;
 
             match result {
                 Ok(link) => {
@@ -103,14 +104,20 @@ async fn main() -> Result<(), ExitFailure> {
                 }
                 Err(err) => {
                     println!("Error: {:?}", err);
-                    panic!()
                 }
             }
         }));
     }
 
     for site in sites {
-        site.await.unwrap();
+        match site.await {
+            Ok(()) => {
+                // ToDo
+            }
+            Err(err) => {
+                println!("Error: {:?}", err);
+            }
+        }
     }
 
     // println!("results: {:?}", results);

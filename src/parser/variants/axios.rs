@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::time::Duration;
 
 use headless_chrome::protocol::cdp::Target::CreateTarget;
@@ -6,21 +7,12 @@ use headless_chrome::{Browser, LaunchOptions};
 use sanitize_html::rules::predefined::BASIC;
 use sanitize_html::sanitize_str;
 
-// use tokio::time::sleep;
-
-use crate::parser;
 use crate::parser::models::Post;
 use crate::utils;
 
+use super::helpers::log_tabs;
+
 const WAITING_TIMEOUT_SEC: u64 = 30;
-
-fn log_tabs(browser: &Browser) {
-    let tabs = browser.get_tabs().lock().unwrap().clone();
-
-    tabs.into_iter().for_each(|tab| {
-        println!("Tab {:?}", tab.get_url());
-    });
-}
 
 pub async fn parse(host: &str, url_str: &str) -> Result<Post, failure::Error> {
     let _launch_options = LaunchOptions {
@@ -35,9 +27,12 @@ pub async fn parse(host: &str, url_str: &str) -> Result<Post, failure::Error> {
         user_data_dir: None,
         extensions: [].to_vec(),
         args: [].to_vec(),
-        disable_default_args: false,
+        disable_default_args: true,
         idle_browser_timeout: Duration::from_secs(WAITING_TIMEOUT_SEC),
-        process_envs: None,
+        process_envs: Some(HashMap::from([(
+            "--headless".to_string(),
+            "old".to_string(),
+        )])),
         proxy_server: None,
     };
     let browser = Browser::new(_launch_options).unwrap();
@@ -133,6 +128,7 @@ pub async fn parse(host: &str, url_str: &str) -> Result<Post, failure::Error> {
     utils::blue_log("", url_str);
 
     Ok(Post {
+        original_link: url_str.to_string(),
         title,
         description,
         hero_image: Some(hero_image),
@@ -145,13 +141,7 @@ async fn test() {
         "https://www.axios.com/2023/11/18/sam-altman-fired-greg-brockman-openai-microsoft";
     let post = parse("axios.com", permanent_link).await.unwrap();
 
-    let enclosure = Option::as_deref(&post.hero_image);
-
-    if false {
-        parser::post(&post.title, &post.description, enclosure)
-            .await
-            .unwrap();
-    }
+    // let enclosure = Option::as_deref(&post.hero_image);
 
     assert_eq!(
         post.title,
