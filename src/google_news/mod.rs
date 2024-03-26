@@ -3,8 +3,8 @@ use reqwest::Url;
 use scraper::{ElementRef, Html, Selector};
 use tokio::time::{sleep, Duration};
 
-use kafka::producer::{Producer, Record, RequiredAcks};
-use std::fmt::Write;
+
+
 
 pub struct Article {
     pub original_link: String,
