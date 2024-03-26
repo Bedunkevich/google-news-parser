@@ -12,7 +12,7 @@ use self::models::Post;
 mod models;
 mod variants;
 
-const USE_POST: bool = false;
+const USE_POST: bool = true;
 
 pub async fn parse_article(article: Article) -> Result<(), ExitFailure> {
     let host_string = get_host(article.host).unwrap();

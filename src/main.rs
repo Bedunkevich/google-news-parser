@@ -4,7 +4,11 @@ use exitfailure::ExitFailure;
 use feed_rs;
 use feed_rs::model::Entry;
 use feed_rs::model::Feed;
+use opendal::layers::LoggingLayer;
+use opendal::services::Mysql;
+use opendal::Operator;
 use reqwest::Url;
+use rusqlite::{Connection, Result};
 use std::env;
 
 mod google_news;
@@ -19,6 +23,7 @@ async fn main() -> Result<(), ExitFailure> {
     let mut tasks = vec![];
     let args: Vec<String> = env::args().collect();
     let url: &str;
+    let data_base = "./data.db3";
 
     if args.len() < 2 {
         messages::help();
@@ -35,10 +40,38 @@ async fn main() -> Result<(), ExitFailure> {
         return Ok(());
     }
 
-    url = &args[2];
-
+    // All arguments are present
     dotenv().ok();
 
+    // Open the database connection
+    let conn = Connection::open(data_base)?;
+
+    conn.execute(
+        "CREATE TABLE IF NOT EXISTS person (
+            id    INTEGER PRIMARY KEY,
+            name  TEXT NOT NULL,
+            data  BLOB
+        )",
+        (), // empty list of parameters.
+    )?;
+
+    // OpenDal mySQL
+
+    let mut builder = Mysql::default();
+    builder.connection_string("mysql://root:smartmedia@127.0.0.1:3306/fetcher");
+    builder.table("sources");
+    // key field type in the table should be compatible with Rust's &str like text
+    builder.key_field("key");
+    // value field type in the table should be compatible with Rust's Vec<u8> like bytea
+    builder.value_field("value");
+
+    let op = Operator::new(builder)?
+        .layer(LoggingLayer::default())
+        .finish();
+
+    op.write("hello.txt", "Hello, World!").await?;
+
+    url = &args[2];
     utils::system_log("Fetching", url);
 
     let fetch_url: Url = Url::parse(&*url)?;
