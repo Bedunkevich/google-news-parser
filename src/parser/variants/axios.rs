@@ -18,7 +18,7 @@ pub async fn parse(host: &str, url_str: &str) -> Result<Post, failure::Error> {
     let _launch_options = LaunchOptions {
         enable_logging: true,
         headless: false,
-        sandbox: true,
+        sandbox: false,
         enable_gpu: false,
         window_size: Some((100, 100)),
         port: None,
@@ -27,7 +27,7 @@ pub async fn parse(host: &str, url_str: &str) -> Result<Post, failure::Error> {
         user_data_dir: None,
         extensions: [].to_vec(),
         args: [].to_vec(),
-        fetcher_options: Default::default(),
+        // fetcher_options: Default::default(),
         disable_default_args: true,
         idle_browser_timeout: Duration::from_secs(WAITING_TIMEOUT_SEC),
         process_envs: Some(HashMap::from([(

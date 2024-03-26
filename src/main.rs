@@ -1,17 +1,17 @@
 #[macro_use]
 extern crate rocket;
-use colored::Colorize;
+// use colored::Colorize;
 use dotenv::dotenv;
 use exitfailure::ExitFailure;
 use feed_rs;
 use feed_rs::model::Entry;
 use feed_rs::model::Feed;
-use opendal::layers::LoggingLayer;
-use opendal::services::Mysql;
-use opendal::Operator;
+// use opendal::layers::LoggingLayer;
+// use opendal::services::Mysql;
+// use opendal::Operator;
 use reqwest::Url;
 use rusqlite::{Connection, Result};
-use std::env;
+// use std::env;
 
 mod google_news;
 mod messages;
@@ -23,24 +23,25 @@ const MAX_ITEMS: usize = 10;
 #[tokio::main]
 async fn start() -> Result<(), ExitFailure> {
     let mut tasks = vec![];
-    let args: Vec<String> = env::args().collect();
-    let url: &str;
+    // let args: Vec<String> = env::args().collect();
+    let url: &str =
+        "https://news.google.com/rss/headlines/section/geo/NY?hl=en-US&gl=US&ceid=US:en";
     let data_base = "./data.db3";
 
-    if args.len() < 2 {
-        messages::help();
-        return Ok(());
-    }
+    // if args.len() < 2 {
+    //     messages::help();
+    //     return Ok(());
+    // }
 
-    if !args[1].contains("--url") {
-        println!("{} {}", "Unknow options:".yellow(), args[1]);
-        return Ok(());
-    }
+    // if !args[1].contains("--url") {
+    //     println!("{} {}", "Unknow options:".yellow(), args[1]);
+    //     return Ok(());
+    // }
 
-    if !args.get(2).is_some() {
-        println!("{} - {:?}", "url params not found".yellow(), args);
-        return Ok(());
-    }
+    // if !args.get(2).is_some() {
+    //     println!("{} - {:?}", "url params not found".yellow(), args);
+    //     return Ok(());
+    // }
 
     // All arguments are present
     dotenv().ok();
@@ -71,7 +72,6 @@ async fn start() -> Result<(), ExitFailure> {
 
     // op.write("hello.txt", "Hello, World!").await?;
 
-    url = &args[2];
     utils::system_log("Fetching", url);
 
     let fetch_url: Url = Url::parse(&*url)?;
@@ -158,11 +158,14 @@ async fn start() -> Result<(), ExitFailure> {
 }
 
 #[get("/")]
-fn hello() {
-    main()
+fn hello() -> &'static str {
+    "Hello, world!"
 }
 
 #[launch]
 fn rocket() -> _ {
-    rocket::build().mount("/", routes![hello])
+    let _ = start();
+    rocket::build()
+        .configure(rocket::Config::figment().merge(("port", 9797)))
+        .mount("/", routes![hello])
 }

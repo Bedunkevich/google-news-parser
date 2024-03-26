@@ -9,7 +9,7 @@ pub async fn get_browser(headless: bool) -> Result<Browser, failure::Error> {
     let _launch_options = LaunchOptions {
         enable_logging: true,
         headless,
-        sandbox: true,
+        sandbox: false,
         enable_gpu: false,
         window_size: Some((400, 400)),
         port: None,
@@ -18,7 +18,7 @@ pub async fn get_browser(headless: bool) -> Result<Browser, failure::Error> {
         user_data_dir: None,
         extensions: [].to_vec(),
         args: [OsStr::new("--incognito")].to_vec(),
-        fetcher_options: Default::default(),
+        // fetcher_options: Default::default(),
         disable_default_args: false,
         idle_browser_timeout: Duration::from_secs(WAITING_TIMEOUT_SEC),
         process_envs: None,

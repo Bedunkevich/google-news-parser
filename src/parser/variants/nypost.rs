@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use headless_chrome::{Browser, Element, LaunchOptions};
+use std::path::PathBuf;
 
 use crate::{parser, utils};
 
@@ -8,17 +9,21 @@ const WAITING_TIMEOUT_SEC: u64 = 30;
 
 pub async fn parse(host: &str, url_str: &str) -> Result<(), failure::Error> {
     //    let browser = Browser::default().unwrap();
+    let key = "CHROME_PATH";
+    let path = PathBuf::from(dotenv::var(key).unwrap());
+    println!("> env.path {}", path.display());
+
     let _launch_options = LaunchOptions {
         enable_logging: true,
         headless: true,
-        sandbox: true,
+        sandbox: false,
         enable_gpu: false,
         window_size: Some((100, 100)),
         port: None,
         ignore_certificate_errors: true,
-        path: None,
+        path: Some(path),
         user_data_dir: None,
-        fetcher_options: Default::default(),
+        // fetcher_options: Default::default(),
         extensions: [].to_vec(),
         args: [].to_vec(),
         disable_default_args: false,

@@ -1,0 +1,2 @@
+service dbus start
+google-chrome-stable --no-sandbox --headless --disable-gpu --dump-dom https://www.chromestatus.com/
