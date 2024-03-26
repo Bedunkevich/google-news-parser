@@ -1,3 +1,5 @@
+#[macro_use]
+extern crate rocket;
 use colored::Colorize;
 use dotenv::dotenv;
 use exitfailure::ExitFailure;
@@ -19,7 +21,7 @@ mod utils;
 const MAX_ITEMS: usize = 10;
 
 #[tokio::main]
-async fn main() -> Result<(), ExitFailure> {
+async fn start() -> Result<(), ExitFailure> {
     let mut tasks = vec![];
     let args: Vec<String> = env::args().collect();
     let url: &str;
@@ -57,19 +59,17 @@ async fn main() -> Result<(), ExitFailure> {
 
     // OpenDal mySQL
 
-    let mut builder = Mysql::default();
-    builder.connection_string("mysql://root:smartmedia@127.0.0.1:3306/fetcher");
-    builder.table("sources");
-    // key field type in the table should be compatible with Rust's &str like text
-    builder.key_field("key");
-    // value field type in the table should be compatible with Rust's Vec<u8> like bytea
-    builder.value_field("value");
+    // let mut builder = Mysql::default();
+    // builder.connection_string("mysql://root:smartmedia@127.0.0.1:3306/fetcher");
+    // builder.table("sources");
+    // builder.key_field("key");
+    // builder.value_field("value");
 
-    let op = Operator::new(builder)?
-        .layer(LoggingLayer::default())
-        .finish();
+    // let op = Operator::new(builder)?
+    //     .layer(LoggingLayer::default())
+    //     .finish();
 
-    op.write("hello.txt", "Hello, World!").await?;
+    // op.write("hello.txt", "Hello, World!").await?;
 
     url = &args[2];
     utils::system_log("Fetching", url);
@@ -154,6 +154,15 @@ async fn main() -> Result<(), ExitFailure> {
     }
 
     // println!("results: {:?}", results);
-
     Ok(())
+}
+
+#[get("/")]
+fn hello() {
+    main()
+}
+
+#[launch]
+fn rocket() -> _ {
+    rocket::build().mount("/", routes![hello])
 }

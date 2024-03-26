@@ -16,6 +16,7 @@ kafka = "0.10.0"
 log = "0.4.20"
 opendal = { version = "0.44.2", features = ["services-mysql"] }
 reqwest = { version = "0.11.22", features = ["json"] }
+rocket = "0.5.0"
 rusqlite = { version = "0.30.0", features = ["bundled"] }
 sanitize_html = "0.8.0"
 scraper = "0.18.1"
