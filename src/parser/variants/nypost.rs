@@ -18,6 +18,7 @@ pub async fn parse(host: &str, url_str: &str) -> Result<(), failure::Error> {
         ignore_certificate_errors: true,
         path: None,
         user_data_dir: None,
+        fetcher_options: Default::default(),
         extensions: [].to_vec(),
         args: [].to_vec(),
         disable_default_args: false,

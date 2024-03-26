@@ -3,9 +3,6 @@ use reqwest::Url;
 use scraper::{ElementRef, Html, Selector};
 use tokio::time::{sleep, Duration};
 
-
-
-
 pub struct Article {
     pub original_link: String,
     pub host: String,
@@ -44,6 +41,10 @@ pub async fn get_article_link(url: &str, delay: Option<u64>) -> Result<Article, 
 
 #[tokio::test]
 async fn test() {
+    use kafka::producer::Record;
+    use kafka::{client::RequiredAcks, producer::Producer};
+    use std::fmt::Write;
+
     let mut producer = Producer::from_hosts(vec!["localhost:9092".to_owned()])
         .with_ack_timeout(Duration::from_secs(1))
         .with_required_acks(RequiredAcks::One)

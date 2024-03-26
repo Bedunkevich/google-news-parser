@@ -18,6 +18,7 @@ pub async fn get_browser(headless: bool) -> Result<Browser, failure::Error> {
         user_data_dir: None,
         extensions: [].to_vec(),
         args: [OsStr::new("--incognito")].to_vec(),
+        fetcher_options: Default::default(),
         disable_default_args: false,
         idle_browser_timeout: Duration::from_secs(WAITING_TIMEOUT_SEC),
         process_envs: None,
