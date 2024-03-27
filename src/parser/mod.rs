@@ -133,7 +133,6 @@ pub async fn post_to_blockchain(
 }
 
 pub fn get_host(origin: String) -> Result<String, failure::Error> {
-    // let origin = String::from("www_foxnews_com");
     let parts = origin.split(".");
     let collection: Vec<&str> = parts.collect();
     let len = collection.len();
